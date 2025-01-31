@@ -79,7 +79,7 @@ def scatter_column(fig, feature_series, label_series, plot_count, plot_number):
     ax.locator_params(axis='both', tight=True, nbins=5)
     return ax
 
-def scatter_all(data, feature_names, label_name, orientation, figure_name="scatters.png"):
+def scatter_all(data, feature_names, label_name, orientation="landscape", figure_name="scatters.png"):
     """
     For each feature, scatter plot it vs the label.
     """
