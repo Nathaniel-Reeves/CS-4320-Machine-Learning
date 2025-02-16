@@ -74,6 +74,7 @@ def get_data(filename):
 def load_data(my_args, filename):
     data = get_data(filename)
     feature_columns, label_column = get_feature_and_label_names(my_args, data)
+    
     X = data[feature_columns]
     if (label_column == ""):
         y = None
@@ -105,6 +106,12 @@ def get_feature_and_label_names(my_args, data):
         for feature_column in data.columns:
             if feature_column != label:
                 features.append(feature_column)
+    
+    # exclude = ["ExterQual", "BsmtFinType1", "BsmtFinType2", "LowQualFinSF"]
+    # for column in exclude:
+    #     if column in features:
+    #         print("Removing: {}".format(column))
+    #         features.remove(column)
 
     return features, label
 
@@ -172,7 +179,7 @@ def do_cross(my_args):
     
     pipeline = make_fit_pipeline(my_args)
 
-    cv_results = sklearn.model_selection.cross_validate(pipeline, X, y, cv=3, n_jobs=-1, verbose=3, scoring=('r2', 'neg_mean_squared_error', 'neg_mean_absolute_error'),)
+    cv_results = sklearn.model_selection.cross_validate(pipeline, X, y, cv=50, n_jobs=-1, verbose=3, scoring=('r2', 'neg_mean_squared_error', 'neg_mean_absolute_error'),)
 
     print("R2:", cv_results['test_r2'], cv_results['test_r2'].mean())
     print("MSE:", cv_results['test_neg_mean_squared_error'], cv_results['test_neg_mean_squared_error'].mean())
@@ -394,13 +401,17 @@ def do_predict(my_args):
 def select_model(my_args):
     model_type = my_args.model_type
     if model_type == "SGD":
-        return sklearn.linear_model.SGDRegressor(max_iter=1000, tol=1e-3)
+        return sklearn.linear_model.SGDRegressor()
     elif model_type == "linear":
         return sklearn.linear_model.LinearRegression()
     elif model_type == "SVC":
         return sklearn.svm.LinearSVC()
     elif model_type == "boost":
-        return sklearn.ensemble.GradientBoostingRegressor()
+        return sklearn.ensemble.GradientBoostingRegressor(
+            learning_rate=0.1,
+            n_estimators=10000,
+            max_depth=3
+        )
     elif model_type == "forest":
         return sklearn.ensemble.RandomForestRegressor()
     elif model_type == "tree":
@@ -417,9 +428,9 @@ def parse_args(argv):
     parser.add_argument('--random-seed',   '-R',           default=314159265,       type=int,   help="random number seed (-1 to use OS entropy)")
     parser.add_argument('--features',      '-f',           default=None,            type=str,   nargs="+", action="extend",  help="column names for features")
     parser.add_argument('--label',         '-l',           default="label",         type=str,   help="column name for label")
-    parser.add_argument('--use-polynomial-features', '-p', default=1,               type=int,   help="degree of polynomial features.  0 = don't use (default=1)")
-    parser.add_argument('--use-scaler',    '-s',           default=1,               type=int,   help="0 = don't use scaler, 1 = do use scaler (default=1)")
-    parser.add_argument('--numerical-missing-strategy',    default="median",        type=str,   choices=["mean", "median", "most_frequent"],      help="strategy for missing numerical information")
+    parser.add_argument('--use-polynomial-features', '-p', default=0,               type=int,   help="degree of polynomial features.  0 = don't use (default=0)")
+    parser.add_argument('--use-scaler',    '-s',           default=0,               type=int,   help="0 = don't use scaler, 1 = do use scaler (default=0)")
+    parser.add_argument('--numerical-missing-strategy',    default="mean",          type=str,   choices=["mean", "median", "most_frequent"],      help="strategy for missing numerical information")
     parser.add_argument('--catagorical-missing-strategy',  default="most_frequent", type=str,   choices=["most_frequent"],      help="strategy for missing numerical information")
     parser.add_argument('--show-test',     '-S',           default=0,               type=int,   help="0 = don't show test loss, 1 = do show test loss (default=0)")
     parser.add_argument('--model-type',    '-M',           default="SGD",           type=str,   choices=["SGD", "linear", "SVC", "boost", "forest", "tree"], help="Model type")

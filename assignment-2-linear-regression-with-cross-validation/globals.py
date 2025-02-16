@@ -93,7 +93,7 @@ _columns = {
     "SaleCondition": ("Normal", "Abnorml", "AdjLand", "Alloca", "Family", "Partial"),
     "SalePrice": float
 }
-_exclude_columns = ["Id"]
+_exclude_columns = ["Id","ExterQual", "BsmtFinType1", "BsmtFinType2", "LowQualFinSF"]
 _label_name = "SalePrice"
 _filename = "train.csv"
 _train_filename = "data-train.csv"
