@@ -1,2 +1,4 @@
 .venv
 */out/*
+*/data/*.csv
+*/*model*
